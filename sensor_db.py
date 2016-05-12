@@ -41,6 +41,26 @@ def dbinit(cursor):
     cursor.execute('SET sql_notes = 1;') # re-enable warnings
 
 
+# Set up read functions for use by data source objects
+def read_heartrate():
+    return 1
+
+def read_gas():
+    return 0
+
+read_functions = {}
+read_functions['heartrate'] = read_heartrate
+read_functions['gas'] = read_gas
+
+
+
+class source:
+    def __init__(self, cursor, name):
+        self.cursor = cursor
+        self.name = name
+        self.read = read_functions[self.name]
+
+
 if __name__ == '__main__':
     print 'Connecting to database'
     try:
@@ -49,6 +69,8 @@ if __name__ == '__main__':
         dbinit(cur)
         cur.execute('SHOW TABLES')
         print cur.fetchall()
+        foo = source(cur, 'heartrate')
+        print foo.read()
     except mdb.Error, e:
         print 'Error %d: %s' % (e.args[0],e.args[1])
         print '>>Check you have set up the db and user correctly as per the README!<<'
