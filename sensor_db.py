@@ -48,33 +48,44 @@ if __name__ == '__main__':
         con = mdb.connect(dbhost, dbuser, dbpword, dbname);
         cur = con.cursor()
         dbinit(cur)
+    except mdb.Error as e:
+        print 'Database Error %d: %s' % (e.args[0],e.args[1])
+        print '>>Check you have set up the db and user correctly as per the README!<<'
+        sys.exit(1)
 
-        # set up sensors
-        ignore = {}
-        motor1 = v_m.vibration_motor("P9_17")   # connect to I2C1 connector
-        motor2 = v_m.vibration_motor("P9_26")   # connect to UART1 connector
-        gas_sensor = mq5.mq5()                  # AIN0 is default pin
-        try:
-            heart_sensor = heartsense.heartsense()  # I2C2 bus
-            ignore['heartrate'] = False
-        except IOError as e:
-            print 'Heart rate sensor not connected, ignoring sensor'
-            ignore['heartrate'] = True
-        try:
-            imu_sensor = mpu.mpu9250()              # I2C2 bus
-            ignore['imu_sensor'] = False
-        except IOError as e:
-            print 'IMU not connected, ignoring sensor'
-            ignore['imu_sensor'] = True
-        try:
-            bmp_sensor = BMP085.BMP085()            # I2C2 bus
-            ignore['bmp_sensor'] = False
-        except IOError as e:
-            print 'Barometer and temperature sensor not connected, ignoring sensor'
-            ignore['bmp_sensor'] = True
-        gps_sensor = gps.gps("localhost", "2947") # UART1 bus
+    # set up sensors
+    ignore = {}
+    motor1 = v_m.vibration_motor("P9_17")   # connect to I2C1 connector
+    motor2 = v_m.vibration_motor("P9_26")   # connect to UART1 connector
+    gas_sensor = mq5.mq5()                  # AIN0 is default pin
+    gps_sensor = gps.gps("localhost", "2947") # UART1 bus
+    try:
+        heart_sensor = heartsense.heartsense()  # I2C2 bus
+        ignore['heartrate'] = False
+    except IOError as e:
+        print 'Heart rate sensor not connected, ignoring sensor'
+        ignore['heartrate'] = True
+    try:
+        imu_sensor = mpu.mpu9250()              # I2C2 bus
+        ignore['imu_sensor'] = False
+    except IOError as e:
+        print 'IMU not connected, ignoring sensor'
+        ignore['imu_sensor'] = True
+    try:
+        bmp_sensor = BMP085.BMP085()            # I2C2 bus
+        ignore['bmp_sensor'] = False
+    except IOError as e:
+        print 'Barometer and temperature sensor not connected, ignoring sensor'
+        ignore['bmp_sensor'] = True
 
-
+    # read sensors and store data in db
+    try:
+        while True:
+            cur.execute('INSERT INTO motors (time, m1_status, m2_status) VALUES(%s,%s,%s)',
+                        (time.strftime('%Y-%m-%d %H:%M:%S'),motor1.status,motor2.status))
+            con.commit()
+            time.sleep(0.5)
+            print('repeating')
     except mdb.Error as e:
         print 'Database Error %d: %s' % (e.args[0],e.args[1])
         print '>>Check you have set up the db and user correctly as per the README!<<'
