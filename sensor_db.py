@@ -42,8 +42,9 @@ def dbinit(cursor):
 
 
 # Set up read functions for use by data source objects
-def read_heartrate():
-    return 1
+def read_heartrate(self):
+    value = self.hardware.read()
+    return value
 
 def read_gas():
     return 0
@@ -52,6 +53,11 @@ read_functions = {}
 read_functions['heartrate'] = read_heartrate
 read_functions['gas'] = read_gas
 
+def get_hw_heartrate():
+    return heartsense.heartsense()
+
+get_hardware = {}
+get_hardware['heartrate'] = get_hw_heartrate
 
 
 class source:
@@ -59,6 +65,7 @@ class source:
         self.cursor = cursor
         self.name = name
         self.read = read_functions[self.name]
+        self.hardware = get_hardware[self.name]
 
 
 if __name__ == '__main__':
