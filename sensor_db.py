@@ -85,6 +85,7 @@ if __name__ == '__main__':
         ignore['bmp_sensor'] = True
 
     # read sensors and store data in db
+    # TODO use a socket to control motors, put this main script into functions?
     try:
         print('Starting main loop reading sensors into db')
         while True:
