@@ -58,7 +58,11 @@ if __name__ == '__main__':
     motor1 = v_m.vibration_motor("P9_17")   # connect to I2C1 connector
     motor2 = v_m.vibration_motor("P9_26")   # connect to UART1 connector
     gas_sensor = mq5.mq5()                  # AIN0 is default pin
-    gps_sensor = gps.gps("localhost", "2947") # UART1 bus
+    try:
+        gps_sensor = gps.gps("localhost", "2947") # UART1 bus
+    except IOError as e:
+        print 'GPS sensor not connected, ignoring sensor'
+        ignore['gps'] = True
     try:
         heart_sensor = heartsense.heartsense()  # I2C2 bus
         ignore['heartrate'] = False
@@ -83,6 +87,19 @@ if __name__ == '__main__':
         while True:
             cur.execute('INSERT INTO motors (time, m1_status, m2_status) VALUES(%s,%s,%s)',
                         (time.strftime('%Y-%m-%d %H:%M:%S'),motor1.status,motor2.status))
+            cur.execute('INSERT INTO gas (time, raw_value) VALUES(%s,%s)',
+                        (time.strftime('%Y-%m-%d %H:%M:%S'),gas_sensor.read_raw()))
+            if not ignore['gps']:
+                gps_report = gps_sensor.next()
+                if gps_report['class'] == 'TPV':
+                    if not hasattr(gps_report, 'time'):
+                        gps_report['time'] = None
+                    if not hasattr(gps_report, 'latitude'):
+                        gps_report['time'] = None
+                    if not hasattr(gps_report, 'longitude'):
+                        gps_report['time'] = None
+                    cur.execute('INSERT INTO gps (time, gps_time, latitude, longitude) VALUES(%s,%s,%s,%s)',
+                                (time.strftime('%Y-%m-%d %H:%M:%S'),gps_report['time'],gps_report['latitude'],gps_report['longitude']))
             con.commit()
             time.sleep(0.5)
             print('repeating')
