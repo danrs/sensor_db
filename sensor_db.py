@@ -27,7 +27,7 @@ def dbinit(cursor):
     """
     cursor.execute('SET sql_notes = 0;') # disable warnings in case tables already exist
     cursor.execute('CREATE TABLE IF NOT EXISTS heartrate (time TIMESTAMP, bpm INTEGER);')
-    cursor.execute("""CREATE TABLE IF NOT EXISTS imu (time TIMESTAMP, temp INTEGER,
+    cursor.execute("""CREATE TABLE IF NOT EXISTS imu (time TIMESTAMP, temperature INTEGER,
                       ax INTEGER, ay INTEGER, az INTEGER,
                       wx INTEGER, wy INTEGER, wz INTEGER,
                       mx INTEGER, my INTEGER, mz INTEGER);""")
@@ -60,15 +60,17 @@ if __name__ == '__main__':
     gas_sensor = mq5.mq5()                  # AIN0 is default pin
     try:
         gps_sensor = gps.gps("localhost", "2947") # UART1 bus
+        gps_report = gps_sensor.next()
+        ignore['gps'] = False
     except IOError as e:
         print 'GPS sensor not connected, ignoring sensor'
         ignore['gps'] = True
     try:
         heart_sensor = heartsense.heartsense()  # I2C2 bus
-        ignore['heartrate'] = False
+        ignore['heart_sensor'] = False
     except IOError as e:
         print 'Heart rate sensor not connected, ignoring sensor'
-        ignore['heartrate'] = True
+        ignore['heart_sensor'] = True
     try:
         imu_sensor = mpu.mpu9250()              # I2C2 bus
         ignore['imu_sensor'] = False
@@ -84,6 +86,7 @@ if __name__ == '__main__':
 
     # read sensors and store data in db
     try:
+        print('Starting main loop reading sensors into db')
         while True:
             cur.execute('INSERT INTO motors (time, m1_status, m2_status) VALUES(%s,%s,%s)',
                         (time.strftime('%Y-%m-%d %H:%M:%S'),motor1.status,motor2.status))
@@ -100,6 +103,20 @@ if __name__ == '__main__':
                         gps_report['time'] = None
                     cur.execute('INSERT INTO gps (time, gps_time, latitude, longitude) VALUES(%s,%s,%s,%s)',
                                 (time.strftime('%Y-%m-%d %H:%M:%S'),gps_report['time'],gps_report['latitude'],gps_report['longitude']))
+            if not ignore['heart_sensor']:
+                cur.execute('INSERT INTO heartrate (time, bpm) VALUES(%s,%s)',
+                            (time.strftime('%Y-%m-%d %H:%M:%S'),heart_sensor.read()))
+            if not ignore['imu_sensor']:
+                imu_data = imu_sensor.read_all()
+                cur.execute("""INSERT INTO imu (time,temperature,ax,ay,az,wx,wy,wz,mx,my,mz)
+                               VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                            (time.strftime('%Y-%m-%d %H:%M:%S'),imu_data[0],imu_data[1],imu_data[2],imu_data[3],
+                             imu_data[4],imu_data[5],imu_data[6],imu_data[7],imu_data[8],imu_data[9]))
+            if not ignore['bmp_sensor']:
+                cur.execute('INSERT INTO environment (time, temperature, pressure, altitude) VALUES(%s,%s,%s,%s)',
+                            (time.strftime('%Y-%m-%d %H:%M:%S'),bmp_sensor.read_temperature(),
+                              bmp_sensor.read_pressure(), bmp_sensor.read_altitude()))
+
             con.commit()
             time.sleep(0.5)
             print('repeating')
