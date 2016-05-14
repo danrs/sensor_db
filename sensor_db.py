@@ -33,7 +33,8 @@ def dbinit(cursor):
                       mx INTEGER, my INTEGER, mz INTEGER);""")
     cursor.execute('CREATE TABLE IF NOT EXISTS gas (time TIMESTAMP, raw_value INTEGER);')
     cursor.execute("""CREATE TABLE IF NOT EXISTS gps (time TIMESTAMP, gps_time TIMESTAMP,
-                      satellites INTEGER, fix INTEGER, latitude VARCHAR(9), longitude VARCHAR(9));""")
+                      satellites INTEGER, fix INTEGER, latitude DOUBLE, north_south CHAR(1),
+                      longitude DOUBLE, east_west CHAR(1), altitude DOUBLE);""")
     cursor.execute("""CREATE TABLE IF NOT EXISTS environment (time TIMESTAMP,
                       temperature DOUBLE, pressure DOUBLE, altitude DOUBLE);""")
     cursor.execute("""CREATE TABLE IF NOT EXISTS motors (time TIMESTAMP, m1_status INTEGER,
@@ -53,7 +54,7 @@ if __name__ == '__main__':
         print '>>Check you have set up the db and user correctly as per the README!<<'
         sys.exit(1)
 
-    # set up sensors
+    print 'Setting up sensors'
     ignore = {}
     motor1 = v_m.vibration_motor("P9_17")   # connect to I2C1 connector
     motor2 = v_m.vibration_motor("P9_26")   # connect to UART1 connector
@@ -93,9 +94,12 @@ if __name__ == '__main__':
                         (time.strftime('%Y-%m-%d %H:%M:%S'),gas_sensor.read_raw()))
             if not ignore['gps']:
                 gps_data = gps_sensor.read()
-                cur.execute('INSERT INTO gps (time, gps_time, latitude, longitude) VALUES(%s,%s,%s,%s,%s,%s)',
-                            (time.strftime('%Y-%m-%d %H:%M:%S'),gps_data['time'],gps_data['sats'],
-                             gps_data['fix'],gps_data['latitude'],gps_data['longitude']))
+                gps_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(gps_data['time'])))
+                cur.execute("""INSERT INTO gps (time,gps_time,satellites,fix,latitude,north_south,
+                               longitude,east_west,altitude) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                            (time.strftime('%Y-%m-%d %H:%M:%S'),gps_time,gps_data['sats'],
+                             gps_data['fix'],gps_data['lat'],gps_data['lat_ns'],gps_data['lon'],
+                             gps_data['lon_ew'],gps_data['altitude']))
             if not ignore['heart_sensor']:
                 cur.execute('INSERT INTO heartrate (time, bpm) VALUES(%s,%s)',
                             (time.strftime('%Y-%m-%d %H:%M:%S'),heart_sensor.read()))
