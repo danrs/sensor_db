@@ -2,7 +2,7 @@
 
 # Import sensor/actuator libraries
 import Adafruit_BMP.BMP085 as BMP085 #BMP085/BMP180 temperature and humdity sensor
-import gps
+import python_uart_gps as uart_gps
 import python_i2c_heart_rate_sensor as heartsense
 import python_i2c_mpu9250 as mpu #10dof imu
 import python_mq5_gas_sensor as mq5 #gas sensor
@@ -33,7 +33,7 @@ def dbinit(cursor):
                       mx INTEGER, my INTEGER, mz INTEGER);""")
     cursor.execute('CREATE TABLE IF NOT EXISTS gas (time TIMESTAMP, raw_value INTEGER);')
     cursor.execute("""CREATE TABLE IF NOT EXISTS gps (time TIMESTAMP, gps_time TIMESTAMP,
-                      satellites INTEGER, latitude VARCHAR(9), longitude VARCHAR(9));""")
+                      satellites INTEGER, fix INTEGER, latitude VARCHAR(9), longitude VARCHAR(9));""")
     cursor.execute("""CREATE TABLE IF NOT EXISTS environment (time TIMESTAMP,
                       temperature DOUBLE, pressure DOUBLE, altitude DOUBLE);""")
     cursor.execute("""CREATE TABLE IF NOT EXISTS motors (time TIMESTAMP, m1_status INTEGER,
@@ -59,8 +59,7 @@ if __name__ == '__main__':
     motor2 = v_m.vibration_motor("P9_26")   # connect to UART1 connector
     gas_sensor = mq5.mq5()                  # AIN0 is default pin
     try:
-        gps_sensor = gps.gps("localhost", "2947") # UART1 bus
-        gps_report = gps_sensor.next()
+        gps_sensor = uart_gps.uart_gps() # UART1 bus
         ignore['gps'] = False
     except IOError as e:
         print 'GPS sensor not connected, ignoring sensor'
@@ -93,16 +92,10 @@ if __name__ == '__main__':
             cur.execute('INSERT INTO gas (time, raw_value) VALUES(%s,%s)',
                         (time.strftime('%Y-%m-%d %H:%M:%S'),gas_sensor.read_raw()))
             if not ignore['gps']:
-                gps_report = gps_sensor.next()
-                if gps_report['class'] == 'TPV':
-                    if not hasattr(gps_report, 'time'):
-                        gps_report['time'] = None
-                    if not hasattr(gps_report, 'latitude'):
-                        gps_report['time'] = None
-                    if not hasattr(gps_report, 'longitude'):
-                        gps_report['time'] = None
-                    cur.execute('INSERT INTO gps (time, gps_time, latitude, longitude) VALUES(%s,%s,%s,%s)',
-                                (time.strftime('%Y-%m-%d %H:%M:%S'),gps_report['time'],gps_report['latitude'],gps_report['longitude']))
+                gps_data = gps_sensor.read()
+                cur.execute('INSERT INTO gps (time, gps_time, latitude, longitude) VALUES(%s,%s,%s,%s,%s,%s)',
+                            (time.strftime('%Y-%m-%d %H:%M:%S'),gps_data['time'],gps_data['sats'],
+                             gps_data['fix'],gps_data['latitude'],gps_data['longitude']))
             if not ignore['heart_sensor']:
                 cur.execute('INSERT INTO heartrate (time, bpm) VALUES(%s,%s)',
                             (time.strftime('%Y-%m-%d %H:%M:%S'),heart_sensor.read()))
