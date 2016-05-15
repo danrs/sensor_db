@@ -45,4 +45,10 @@ If an I2C of UART sensor is not connected when the script starts, this sill be
 noted and the sensor ignored (analog sensors can't be ignored as there's no way to
 tell if they are connected).
 
+
+### Changing database settings
+If you need to modify the database connection settings, see the file db_config.py.
+
+
 Written by Daniel Smith for UNSW Australia and LaTrobe University. MIT license and all text above must be included in any redistribution
+
