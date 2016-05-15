@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# Script to log sensor data into db
+# (Probably needs to be run as root to control sensors)
+
 # Import sensor/actuator libraries
 import Adafruit_BMP.BMP085 as BMP085 #BMP085/BMP180 temperature and humdity sensor
 import python_uart_gps as uart_gps
@@ -9,16 +12,10 @@ import python_mq5_gas_sensor as mq5 #gas sensor
 import python_vibration_motor as v_m
 
 # Import other stuff we need
-import argparse
 import MySQLdb as mdb
 import sys
 import time
-
-# Database settings (change these here if you need to)
-dbhost = 'localhost'
-dbuser = 'cat'
-dbpword = 'cat'
-dbname = 'catdb'
+import db_config # database settings from ./db_config.py
 
 
 def dbinit(cursor):
@@ -46,7 +43,7 @@ if __name__ == '__main__':
     print 'Connecting to database'
     try:
         # set up database connection
-        con = mdb.connect(dbhost, dbuser, dbpword, dbname);
+        con = mdb.connect(db_config.dbhost, db_config.dbuser, db_config.dbpword, db_config.dbname);
         cur = con.cursor()
         dbinit(cur)
     except mdb.Error as e:
