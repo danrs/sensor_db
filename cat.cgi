@@ -32,30 +32,37 @@ sys.stderr = sys.stdout
 env = Environment(loader=FileSystemLoader('templates'), autoescape=True)
 
 #get environment and form variables
+form = cgi.FieldStorage()
 script_uri = "http://" + os.environ['HTTP_HOST'] + os.environ['SCRIPT_NAME']
 root_url = re.sub("/cat[.]cgi.*$", "", script_uri)
 path_info = ""
 if 'PATH_INFO' in os.environ:
     path_info = os.environ['PATH_INFO']
-    if(path_info == "/"):  #ignore a trailing slash
+    if(path_info == "/"):  # ignore trailing slash
         os.environ['PATH_INFO'] = ""
         path_info = os.environ['PATH_INFO']
+    path_info = re.sub('^/*','',path_info) # remove leading slashes
 
-form = cgi.FieldStorage()
+
+
+sensor_list=['motor','gas','gps','heartrate','imu','temp+pressure']
 
 #print html header
 print "Content-Type: text/html\r\n"
 
 #print relevant page
 if path_info == '':
-#   #print home page
+#   #home page
     t = env.get_template('home.html')
-    sensor_list=['motors','gas','gps','heartrate','imu','temppressure']
     print t.render(sensors=sensor_list, script_uri=script_uri, root=root_url)
-elif path_info == '/about':
+elif path_info == 'about':
 #   #about page
     t = env.get_template('about.html')
     print t.render(script_uri=script_uri, root=root_url)
+elif path_info in sensor_list:
+#   #sensor page
+    t = env.get_template('sensor.html')
+    print t.render(sensor=path_info, script_uri=script_uri, root=root_url)
 else:
 #   #no page present
     t = env.get_template('page_not_found.html')
