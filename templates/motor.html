@@ -1,45 +1,10 @@
-{%extends "skeleton.html"%}
+{%extends "sensor.html"%}
 
-{%block title %}{{sensor}}{% endblock %}
-
-
-{%block content%}
-<!--Print intro text-->
-<div class="jumbotron">
-    <a name="top"></a>
-    <h2>{{sensor ~ " data"}}</h2>
-    <a href="{{script_uri ~ "/" ~ sensor ~ "?vibrate=m1"}}" class="btn btn-danger" title="Vibrate motor for one second">Vibrate motor 1</a>
-    <a href="{{script_uri ~ "/" ~ sensor ~ "?vibrate=m2"}}" class="btn btn-danger" title="Vibrate motor for one second">Vibrate motor 2</a>
-    <br>
-    <br>
-    <a href="{{script_uri ~ "/" ~ sensor ~ "#table_end"}}" class="btn btn-success" onclick="location.reload()">Update</a>
-    <a href="{{script_uri ~ "/" ~ sensor ~ "/csv"}}" class="btn btn-primary">View all as csv</a>
-    <br>
-    <br>
-    <table class="table table-hover table-condensed">
-      <thead>
-        <tr>
-          {% for entry in table_head %}
-            <th>{{entry}}<th>
-          {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in table_data %}
-          <tr>
-            {% for entry in row %}
-               <td>{{entry}}<td>
-            {% endfor %}
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    <a name="table_end"></a>
-    <a href="{{script_uri ~ "/" ~ sensor ~ "#table_end"}}" class="btn btn-success" onclick="location.reload()">Update</a>
-    <a href="{{script_uri ~ "/" ~ sensor ~ "#top"}}" class="btn btn-default">Back to top</a>
-</div>
-
-<div class="container">
-</div>
-
-{%endblock content%}
+{%block extra_buttons%}
+<!--Some buttons to vibrate the motors-->
+  <form method="post">
+    <button type="submit" class="btn btn-danger" title="Vibrate motor for one second" name="vibrate" value="m1">Vibrate motor 1</button>
+    <button type="submit" class="btn btn-danger" title="Vibrate motor for one second" name="vibrate" value="m2">Vibrate motor 2</button>
+  </form>
+  <br>
+{%endblock extra_buttons%}

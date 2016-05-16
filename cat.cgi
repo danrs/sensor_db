@@ -31,6 +31,7 @@ env = Environment(loader=FileSystemLoader('templates'), autoescape=True)
 
 #get environment and form variables
 form = cgi.FieldStorage()
+vibrate = form.getfirst("vibrate","")
 script_uri = "http://" + os.environ['HTTP_HOST'] + os.environ['SCRIPT_NAME']
 root_url = re.sub("/cat[.]cgi.*$", "", script_uri)
 path_info = ""
@@ -78,6 +79,7 @@ elif path_info in sensor_list:
     else:
         t = env.get_template('sensor.html')
         print t.render(table_head=table_head,table_data=table_data,sensor_list=sensor_list,sensor=sensor,script_uri=script_uri,root=root_url)
+    print '<br><br>',vibrate
 elif csv_match:
 #   # print raw csv
     sensor = csv_match.group('sensor')

@@ -8,6 +8,10 @@
 <div class="jumbotron">
     <a name="top"></a>
     <h2>{{sensor ~ " data"}}</h2>
+    <br>
+    {% block extra_buttons %}
+      <!--put extra buttons and things here-->
+    {% endblock %}
     <a href="{{script_uri ~ "/" ~ sensor ~ "#table_end"}}" class="btn btn-success" onclick="location.reload()">Update</a>
     <a href="{{script_uri ~ "/" ~ sensor ~ "/csv"}}" class="btn btn-primary">View all as csv</a>
     <br>
