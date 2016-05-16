@@ -45,6 +45,24 @@ If an I2C of UART sensor is not connected when the script starts, this sill be
 noted and the sensor ignored (analog sensors can't be ignored as there's no way to
 tell if they are connected).
 
+## Using the Web Interface
+The web interface s a simple CGI interface which shows the latest database info
+and allows the database info to be downloaded as csv. All the web scripts are
+kept in the web directory. To set them up, do the following:
+```
+cd web
+./web-setup.sh
+```
+
+This will set the correct permissions and copy the web content to /usr/lib/cgi-bin,
+so you can access it in your browser at http://<beaglebone-ip>:8080/cgi-bin/web/cat.cgi
+
+Note that if you change any web code, you will need to re-run web-setup.sh to copy the
+changed files across. If this is inconvenient, you can simlink the web directory instead
+using "./web-setup.sh -s", but the you will need to make sure the permissions on all
+parent directories of web are correct. This may be insecure and is recommended only for
+developers working on safe (non-public) networks.
+
 
 ### Changing database settings
 If you need to modify the database connection settings, see the file db_config.py.
