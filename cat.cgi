@@ -54,16 +54,16 @@ print "Content-Type: text/html\r\n"
 if path_info == '':
 #   #home page
     t = env.get_template('home.html')
-    print t.render(sensors=sensor_list, script_uri=script_uri, root=root_url)
+    print t.render(sensor_list=sensor_list, script_uri=script_uri, root=root_url)
 elif path_info == 'about':
 #   #about page
     t = env.get_template('about.html')
-    print t.render(script_uri=script_uri, root=root_url)
+    print t.render(sensor_list=sensor_list,script_uri=script_uri, root=root_url)
 elif path_info in sensor_list:
 #   #sensor page
     t = env.get_template('sensor.html')
-    print t.render(sensor=path_info, script_uri=script_uri, root=root_url)
+    print t.render(sensor_list=sensor_list,sensor=path_info, script_uri=script_uri, root=root_url)
 else:
 #   #no page present
     t = env.get_template('page_not_found.html')
-    print t.render(script_uri=script_uri, root=root_url)
+    print t.render(sensor_list=sensor_list,script_uri=script_uri, root=root_url)

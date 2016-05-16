@@ -3,7 +3,7 @@
    Uses bootstrap code from http://getbootstrap.com/ and http://www.bootply.com
    Uses icons from http://glyphicons.com/
 #}
-   
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +16,7 @@
     <meta name="author" content="">
     <link rel="shortcut icon" type="image/x-icon"
         href="http://www.iconj.com/ico/1/f/1f290s4ruf.ico" type="image/x-icon">
-    
+
     <title>{% block title %}CAT{% endblock title %}</title>
 
     <!-- Bootstrap core CSS -->
@@ -36,7 +36,7 @@
 <div id="container">
 
   <body>
-  
+
   {% block navbar %}
   <nav class="navbar navbar-default navbar-static-top" role="navigation">
     <div class="container-fluid">
@@ -48,38 +48,24 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="{{script_uri}}">CAT</a> 
+        <a class="navbar-brand" href="{{script_uri}}">CAT</a>
       </div>
-  
+
       <!-- Collect the nav links, forms, and other content for toggling -->
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       {%block navcontent%}
         <ul class="nav navbar-nav">
           {#put navbar stuff here#}
-        </ul>
-        <form class="navbar-form navbar-left" role="search" method="get">
-          <div class="form-group">
-            <input type="text" class="form-control" placeholder="Search" name="search">
+          <div class="btn-group">
+            {% for sensor in sensor_list  %}
+              <a href="{{script_uri ~ "/" ~ sensor}}"><button type="button" class="btn btn-default navbar-btn">
+                  {{sensor}}
+              </button></a>
+            {% endfor %}
           </div>
-          <button type="submit" class="btn btn-info">
-            <span class="glyphicon glyphicon-search"></span>
-          </button>
-        </form>
-
-        <a href="{{script_uri ~ "/browse"}}"><button type="button" class="btn btn-default navbar-btn">
-          Browse
-        </button></a>
-        <a href="{{script_uri ~ "/match"}}"><button type="button" class="btn btn-primary navbar-btn">
-          Match Me!
-        </button></a>
+        </ul>
 
         <ul class="nav navbar-nav navbar-right">
-          <li><a href="{{script_url ~ "?edit_profile=1"}}">
-            profile
-          </a></li>
-          <li><a href="{{script_uri ~ "?logout=1"}}">
-            logout
-          </a></li>
           <li><a href="{{script_uri ~ "/about"}}">
             <span class="glyphicon glyphicon-question-sign"></span>
           </a></li>
@@ -91,11 +77,11 @@
     </div><!-- /.container-fluid -->
   </nav>
   {%endblock navbar%}
-  
-  
+
+
   {%block content%}
-    <!--Fill this block with page content!-->        
-  
+    <!--Fill this block with page content!-->
+
   {%endblock content%}
 
     <!-- Bootstrap core JavaScript
