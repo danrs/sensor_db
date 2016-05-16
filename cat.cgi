@@ -17,6 +17,8 @@ import MySQLdb as mdb
 import sys
 import time
 import db_config # database settings from ./db_config.py
+import csv
+import StringIO
 
 #debugging
 import cgitb; cgitb.enable()
@@ -43,9 +45,9 @@ if 'PATH_INFO' in os.environ:
         path_info = os.environ['PATH_INFO']
     path_info = re.sub('^/*','',path_info) # remove leading slashes
 
-
-
-sensor_list=['motor','gas','gps','heartrate','imu','temp+pressure']
+sensor_list=['motor','gas','gps','heartrate','imu','environment']
+csv_regex = re.compile(r'(?P<sensor>[^/]+)/csv')
+csv_match = csv_regex.match(path_info)
 
 #print html header
 print "Content-Type: text/html\r\n"
@@ -63,6 +65,20 @@ elif path_info in sensor_list:
 #   #sensor page
     t = env.get_template('sensor.html')
     print t.render(sensor_list=sensor_list,sensor=path_info, script_uri=script_uri, root=root_url)
+elif csv_match:
+#   # print raw csv
+    sensor = csv_match.group('sensor')
+    con = mdb.connect(db_config.dbhost, db_config.dbuser, db_config.dbpword, db_config.dbname);
+    cur = con.cursor()
+    io = StringIO.StringIO()
+    c = csv.writer(io)
+    query_string = 'SHOW columns FROM ' + sensor # get column names
+    cur.execute(query_string)
+    c.writerow([column[0] for column in cur.fetchall()]) #write to csv
+    query_string = 'SELECT * FROM ' + sensor # get actual data
+    cur.execute(query_string)
+    c.writerows(cur.fetchall()) #write to csv
+    print re.sub('\n','<br>\n',io.getvalue()) # add in <br> on newlines and print
 else:
 #   #no page present
     t = env.get_template('page_not_found.html')

@@ -7,7 +7,8 @@
 <!--Print intro text-->
 <div class="jumbotron">
     <h2>{{sensor ~ " data"}}</h2>
-    <p class=lead>Here is the stuff</p>
+    <a href="{{script_uri ~ "/" ~ sensor}}" class="btn btn-success">Update</a>
+    <a href="{{script_uri ~ "/" ~ sensor ~ "/csv"}}" class="btn btn-primary">View as csv</a>
 </div>
 
 <div class="container">

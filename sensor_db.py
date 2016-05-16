@@ -34,7 +34,7 @@ def dbinit(cursor):
                       longitude DOUBLE, east_west CHAR(1), altitude DOUBLE);""")
     cursor.execute("""CREATE TABLE IF NOT EXISTS environment (time TIMESTAMP,
                       temperature DOUBLE, pressure DOUBLE, altitude DOUBLE);""")
-    cursor.execute("""CREATE TABLE IF NOT EXISTS motors (time TIMESTAMP, m1_status INTEGER,
+    cursor.execute("""CREATE TABLE IF NOT EXISTS motor (time TIMESTAMP, m1_status INTEGER,
                     m2_status INTEGER);""")
     cursor.execute('SET sql_notes = 1;') # re-enable warnings
 
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     try:
         print('Starting main loop reading sensors into db')
         while True:
-            cur.execute('INSERT INTO motors (time, m1_status, m2_status) VALUES(%s,%s,%s)',
+            cur.execute('INSERT INTO motor (time, m1_status, m2_status) VALUES(%s,%s,%s)',
                         (time.strftime('%Y-%m-%d %H:%M:%S'),motor1.status,motor2.status))
             cur.execute('INSERT INTO gas (time, raw_value) VALUES(%s,%s)',
                         (time.strftime('%Y-%m-%d %H:%M:%S'),gas_sensor.read_raw()))
