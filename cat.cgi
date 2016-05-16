@@ -4,25 +4,21 @@
 # Should not be run as root, to avoid security issues.
 
 #import things we need
-import re
 import cgi
-import os
+import csv
+import db_config # database settings from ./db_config.py
 import jinja2
 from jinja2 import Environment, FileSystemLoader
-from collections import defaultdict
-from base64 import b64encode
-
-# Import other stuff we need
 import MySQLdb as mdb
+import os
+import re
+import StringIO
 import sys
 import time
-import db_config # database settings from ./db_config.py
-import csv
-import StringIO
 
 #debugging
-import cgitb; cgitb.enable()
-import sys
+import cgitb
+cgitb.enable()
 sys.stderr = sys.stdout
 
 
@@ -64,7 +60,19 @@ elif path_info == 'about':
 elif path_info in sensor_list:
 #   #sensor page
     t = env.get_template('sensor.html')
-    print t.render(sensor_list=sensor_list,sensor=path_info, script_uri=script_uri, root=root_url)
+    sensor = path_info
+    table_length = 20 #default number of rows to print
+    con = mdb.connect(db_config.dbhost, db_config.dbuser, db_config.dbpword, db_config.dbname);
+    cur = con.cursor()
+    query_string = 'SHOW columns FROM ' + sensor # get column names
+    cur.execute(query_string)
+    table_head = [column[0] for column in cur.fetchall()]
+    table_data = []
+    query_string = 'SELECT * FROM ' + sensor + ' LIMIT ' + str(table_length) # get actual data
+    cur.execute(query_string)
+    for row in cur.fetchall():
+        table_data.append(row)
+    print t.render(table_head=table_head,table_data=table_data,sensor_list=sensor_list,sensor=sensor,script_uri=script_uri,root=root_url)
 elif csv_match:
 #   # print raw csv
     sensor = csv_match.group('sensor')
