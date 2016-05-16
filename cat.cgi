@@ -59,7 +59,6 @@ elif path_info == 'about':
     print t.render(sensor_list=sensor_list,script_uri=script_uri, root=root_url)
 elif path_info in sensor_list:
 #   #sensor page
-    t = env.get_template('sensor.html')
     sensor = path_info
     table_length = 20 #default number of rows to print
     con = mdb.connect(db_config.dbhost, db_config.dbuser, db_config.dbpword, db_config.dbname);
@@ -73,7 +72,12 @@ elif path_info in sensor_list:
     cur.execute(query_string)
     for row in cur.fetchall():
         table_data.append(row)
-    print t.render(table_head=table_head,table_data=table_data,sensor_list=sensor_list,sensor=sensor,script_uri=script_uri,root=root_url)
+    if sensor == "motor":
+        t = env.get_template('motor.html')
+        print t.render(table_head=table_head,table_data=table_data,sensor_list=sensor_list,sensor=sensor,script_uri=script_uri,root=root_url)
+    else:
+        t = env.get_template('sensor.html')
+        print t.render(table_head=table_head,table_data=table_data,sensor_list=sensor_list,sensor=sensor,script_uri=script_uri,root=root_url)
 elif csv_match:
 #   # print raw csv
     sensor = csv_match.group('sensor')
