@@ -1,0 +1,24 @@
+{%extends "skeleton.html"%}
+
+{%block title %}CAT{% endblock %}
+
+
+{%block content%}
+<!--Print intro text-->
+<div class="jumbotron">
+    <h1>CAT Web Interface</h1>
+    <p class=lead>Choose a sensor:</p>
+</div>
+
+<div class="container">
+    <div class="row">
+      <!--Print tiles of sensor buttons-->
+      <div class="btn-group" role="group" aria-label="...">
+        {% for sensor in sensors  %}
+          <a href="{{ script_uri ~ "/" ~ sensor }}" class="btn btn-default">{{sensor}}</a>
+        {% endfor %}
+      </div>
+    </div>
+</div>
+
+{%endblock content%}
