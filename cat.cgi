@@ -68,7 +68,8 @@ elif path_info in sensor_list:
     cur.execute(query_string)
     table_head = [column[0] for column in cur.fetchall()]
     table_data = []
-    query_string = 'SELECT * FROM ' + sensor + ' LIMIT ' + str(table_length) # get actual data
+    query_string = ('SELECT * FROM (SELECT * FROM ' + sensor + ' ORDER BY time DESC LIMIT '
+                    + str(table_length) + ') AS TEMP ORDER BY TIME ASC') # get last table_length rows of data
     cur.execute(query_string)
     for row in cur.fetchall():
         table_data.append(row)
