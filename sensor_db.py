@@ -12,10 +12,64 @@ import python_mq5_gas_sensor as mq5 #gas sensor
 import python_vibration_motor as v_m
 
 # Import other stuff we need
-import MySQLdb as mdb
-import sys
-import time
 import db_config # database settings from ./db_config.py
+import MySQLdb as mdb
+import select
+import socket
+import sys
+from threading import Thread
+import time
+
+MAX_LENGTH = 128 # we are only recieving one char at a time so this doesn't neet to be big
+terminate = False # global flag to tell motor server thread when to die
+
+# Declare motors globally so the motor thread can control them
+# TODO implement locking etc to make this a bit more thread safe
+# It's not super critical as it's currently just a motor demo but
+# locking is always a good idea
+motor1 = v_m.vibration_motor("P9_17")   # connect to I2C1 connector (acting as GPIO)
+motor2 = v_m.vibration_motor("P9_26")   # connect to UART1 connector (acting as GPIO)
+
+def client_handler(clientsocket):
+    """
+    Handle client from the motor server thread and do motor control
+    """
+    while True:
+        buf = clientsocket.recv(MAX_LENGTH)
+        if buf == '': # client has terminated connection, so end this thread
+            return
+        elif buf == '1':
+            motor1.on()
+            time.sleep(1)
+            motor1.off()
+        elif buf == '2':
+            motor2.on()
+            time.sleep(1)
+            motor2.off()
+        else:
+            print "Invalid message received"
+
+
+def motor_server():
+    """
+    Wait for connections and launch client threads for them
+    """
+    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    serversocket.setblocking(0) #make socket non-blocking
+    PORT = 16001
+    HOST = '127.0.0.1'
+    serversocket.bind((HOST, PORT))
+    serversocket.listen(5)
+    readlist = [serversocket]
+    while not terminate: # check for global terminate flag
+        readable, writeable, exceptional = select.select(readlist, [], [], 5) #check if socket is readable with 5s timeout
+        for s in readable:
+            if s is serversocket:
+                #accept connections from outside
+                (clientsocket, address) = serversocket.accept()
+                #deal with connection using another new thread
+                client_thread = Thread(target=client_handler, args=(clientsocket,))
+                client_thread.start()
 
 
 def dbinit(cursor):
@@ -51,10 +105,15 @@ if __name__ == '__main__':
         print '>>Check you have set up the db and user correctly as per the README!<<'
         sys.exit(1)
 
+    # Start motor control thread
+    motor_server_thread = Thread(target=motor_server)
+    motor_server_thread.start()
+
+    # Check which sensors are connected
     print 'Setting up sensors'
     ignore = {}
-    motor1 = v_m.vibration_motor("P9_17")   # connect to I2C1 connector
-    motor2 = v_m.vibration_motor("P9_26")   # connect to UART1 connector
+    motor1 = v_m.vibration_motor("P9_17")   # connect to I2C1 connector (acting as GPIO)
+    motor2 = v_m.vibration_motor("P9_26")   # connect to UART1 connector (acting as GPIO)
     gas_sensor = mq5.mq5()                  # AIN0 is default pin
     try:
         gps_sensor = uart_gps.uart_gps() # UART1 bus
@@ -82,9 +141,8 @@ if __name__ == '__main__':
         ignore['bmp_sensor'] = True
 
     # read sensors and store data in db
-    # TODO use a socket to control motors, put this main script into functions?
     try:
-        print('Starting main loop reading sensors into db')
+        print('Starting main loop (reading sensors into db)')
         while True:
             cur.execute('INSERT INTO motor (time, m1_status, m2_status) VALUES(%s,%s,%s)',
                         (time.strftime('%Y-%m-%d %H:%M:%S'),motor1.status,motor2.status))
@@ -113,7 +171,7 @@ if __name__ == '__main__':
                               bmp_sensor.read_pressure(), bmp_sensor.read_altitude()))
 
             con.commit()
-            time.sleep(0.5)
+            time.sleep(0.2)
             print('repeating')
     except mdb.Error as e:
         print 'Database Error %d: %s' % (e.args[0],e.args[1])
@@ -124,6 +182,10 @@ if __name__ == '__main__':
         print '>>Check you have connected all sensors correctly!<<'
         sys.exit(1)
     finally:
+        # Shut down db connection
         if con:
             con.close()
+        # Shut down motor control thread
+        terminate = True
+        motor_server_thread.join()
 

@@ -32,7 +32,7 @@ env = Environment(loader=FileSystemLoader('templates'), autoescape=True)
 
 #set up a socket for talking with the motor control script (sensor_db.py)
 HOST = '127.0.0.1'
-PORT = 16000  #motor
+PORT = 16001  #motor
 motor_socket = socket.socket()
 
 #get environment and form variables
@@ -84,6 +84,7 @@ elif path_info in sensor_list:
             try:
                 motor_socket.connect((HOST, PORT))
                 motor_socket.send(vibrate)
+                motor_socket.close()
                 status_message = 'Motor ' + vibrate + ' was vibrated for one second'
                 alert = 'success'
             except IOError as e:
