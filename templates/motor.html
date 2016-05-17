@@ -3,8 +3,15 @@
 {%block extra_buttons%}
 <!--Some buttons to vibrate the motors-->
   <form method="post">
-    <button type="submit" class="btn btn-danger" title="Vibrate motor for one second" name="vibrate" value="m1">Vibrate motor 1</button>
-    <button type="submit" class="btn btn-danger" title="Vibrate motor for one second" name="vibrate" value="m2">Vibrate motor 2</button>
+    <button type="submit" class="btn btn-danger" title="Vibrate motor for one second" name="vibrate" value="1">Vibrate motor 1</button>
+    <button type="submit" class="btn btn-danger" title="Vibrate motor for one second" name="vibrate" value="2">Vibrate motor 2</button>
   </form>
+  {% if motor_status %}
+    <p>
+      <div class="{{"alert alert-" ~ alert}}" role="alert">
+        {% block message %}{{motor_status}}{% endblock message %}
+      </div>
+    </p>
+  {% endif %}
   <br>
 {%endblock extra_buttons%}

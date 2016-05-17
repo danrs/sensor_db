@@ -12,6 +12,7 @@ from jinja2 import Environment, FileSystemLoader
 import MySQLdb as mdb
 import os
 import re
+import socket
 import StringIO
 import sys
 import time
@@ -29,9 +30,13 @@ sys.stderr = sys.stdout
 #load template with jinja2
 env = Environment(loader=FileSystemLoader('templates'), autoescape=True)
 
+#set up a socket for talking with the motor control script (sensor_db.py)
+HOST = '127.0.0.1'
+PORT = 16000  #motor
+motor_socket = socket.socket()
+
 #get environment and form variables
 form = cgi.FieldStorage()
-vibrate = form.getfirst("vibrate","")
 script_uri = "http://" + os.environ['HTTP_HOST'] + os.environ['SCRIPT_NAME']
 root_url = re.sub("/cat[.]cgi.*$", "", script_uri)
 path_info = ""
@@ -74,12 +79,27 @@ elif path_info in sensor_list:
     for row in cur.fetchall():
         table_data.append(row)
     if sensor == "motor":
+        vibrate = form.getfirst("vibrate","")
+        if vibrate == "1" or vibrate == "2":
+            try:
+                motor_socket.connect((HOST, PORT))
+                motor_socket.send(vibrate)
+                status_message = 'Motor ' + vibrate + ' was vibrated for one second'
+                alert = 'success'
+            except IOError as e:
+                status_message = 'Could not connect to motor script'
+                alert = 'warning'
+        else:
+            status_message = ''
+            alert = ''
         t = env.get_template('motor.html')
-        print t.render(table_head=table_head,table_data=table_data,sensor_list=sensor_list,sensor=sensor,script_uri=script_uri,root=root_url)
+        print t.render(motor_status=status_message,alert=alert,
+                       table_head=table_head,table_data=table_data,
+                       sensor_list=sensor_list,sensor=sensor,script_uri=script_uri,root=root_url)
     else:
         t = env.get_template('sensor.html')
-        print t.render(table_head=table_head,table_data=table_data,sensor_list=sensor_list,sensor=sensor,script_uri=script_uri,root=root_url)
-    print '<br><br>',vibrate
+        print t.render(table_head=table_head,table_data=table_data,
+                       sensor_list=sensor_list,sensor=sensor,script_uri=script_uri,root=root_url)
 elif csv_match:
 #   # print raw csv
     sensor = csv_match.group('sensor')
