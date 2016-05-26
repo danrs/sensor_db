@@ -26,11 +26,11 @@ mysql> quit # we are done here
 
 Finally, you will need to install libraries for each of the sensors used in the
 logging script. Repositories for each sensor are as follows:
-https://github.com/danrs/python_uart_gps
-https://github.com/danrs/python_i2c_mpu9250
-https://github.com/danrs/python_i2c_heart_rate_sensor
-https://github.com/danrs/python_mq5_gas_sensor
-https://github.com/danrs/python_vibration_motor
+https://github.com/modular-CAT/python_uart_gps
+https://github.com/modular-CAT/python_i2c_mpu9250
+https://github.com/modular-CAT/python_i2c_heart_rate_sensor
+https://github.com/modular-CAT/python_mq5_gas_sensor
+https://github.com/modular-CAT/python_vibration_motor
 https://github.com/adafruit/Adafruit_Python_BMP.git
 Install these sensor libraries according to the instructions in their READMEs.
 
