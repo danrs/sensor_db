@@ -66,7 +66,7 @@ To set up the web scripts, do the following:
 This will set the correct permissions and copy the web content to /usr/lib/cgi-bin,
 so you can access it in your browser at:
 
-http://<beaglebone-ip>:8080/cgi-bin/sensor_db/cat.cgi
+http://beaglebone-ip:8080/cgi-bin/sensor_db/cat.cgi # replace beaglebone-ip with the actual IP address
 
 Note that if you change any web code, you will need to re-run web-setup.sh to copy the
 changed files across. If this is inconvenient, you can simlink the web directory instead
