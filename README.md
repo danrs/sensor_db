@@ -1,7 +1,25 @@
 # sensor database
-Repository for python script(s) to dump Grove sensor data into a database
+Repository for python script(s) on a BeagleBone to dump Grove sensor data into a database
 
 ## Setup
+If you have not set up or configured anything on your BeagleBone yet, please
+take a look at https://github.com/modular-CAT/bbg_setup_Grove
+
+This repository contains setup scripts to install necessary software for using
+Grove sensors with your BeagleBone in Python.
+
+### Sensors
+Next, you will need to install libraries for each of the sensors used in the
+logging script. Repositories for each sensor are as follows:
+https://github.com/modular-CAT/python_uart_gps
+https://github.com/modular-CAT/python_i2c_mpu9250
+https://github.com/modular-CAT/python_i2c_heart_rate_sensor
+https://github.com/modular-CAT/python_mq5_gas_sensor
+https://github.com/modular-CAT/python_vibration_motor
+https://github.com/adafruit/Adafruit_Python_BMP.git
+Install these sensor libraries according to the instructions in their READMEs.
+
+### Database
 If you don't already have mysql installed, install it with:
 ```
 $ sudo apt-get install mysql-server
@@ -24,15 +42,6 @@ mysql> GRANT ALL ON catdb.* TO 'cat'@'localhost'; # give the user access to the 
 mysql> quit # we are done here
 ```
 
-Finally, you will need to install libraries for each of the sensors used in the
-logging script. Repositories for each sensor are as follows:
-https://github.com/modular-CAT/python_uart_gps
-https://github.com/modular-CAT/python_i2c_mpu9250
-https://github.com/modular-CAT/python_i2c_heart_rate_sensor
-https://github.com/modular-CAT/python_mq5_gas_sensor
-https://github.com/modular-CAT/python_vibration_motor
-https://github.com/adafruit/Adafruit_Python_BMP.git
-Install these sensor libraries according to the instructions in their READMEs.
 
 ## Using the Sensor Logging Script
 Now you are ready to begin using this repository. To run the sensor logging script:
